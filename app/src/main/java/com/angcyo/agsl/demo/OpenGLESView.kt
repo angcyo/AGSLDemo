@@ -389,8 +389,11 @@ class Triangle {
             GLES20.glUniformMatrix4fv(vPMatrixHandle, 1, false, mvpMatrix, 0)
 
             // Draw the triangle
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount)
-            //GLES20.glDrawArrays(GLES20.GL_LINES, 0, vertexCount)
+            //GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount)
+            // 绘制描边的三角形
+            GLES20.glLineWidth(1f) // 设置描边宽度
+            //GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, 3) // 用 GL_LINE_LOOP 绘制描边
+            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, 2)
 
             // Disable vertex array
             GLES20.glDisableVertexAttribArray(it)
