@@ -145,7 +145,7 @@ class MyRenderer : GLSurfaceView.Renderer {
     private val viewMatrix = FloatArray(16)
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
-        Log.w(TAG, "onSurfaceChanged: $width x $height")
+        Log.w(TAG, "onSurfaceChanged: $width x $height") // 1080 x 736
         GLES20.glViewport(0, 0, width, height)
 
         val ratio: Float = width.toFloat() / height.toFloat()
@@ -305,27 +305,50 @@ class Triangle {
             }
         }
 
-    private val vertexShaderCode =
+    private val vertexShaderCode = """
+        uniform mat4 uMVPMatrix;
+        attribute vec4 vPosition;
+        void main() {
+          gl_Position = uMVPMatrix * vPosition;
+          gl_PointSize = 10.0;
+        }
+    """.trimIndent()
     // This matrix member variable provides a hook to manipulate
         // the coordinates of the objects that use this vertex shader
-        "uniform mat4 uMVPMatrix;" +
+        /*"uniform mat4 uMVPMatrix;" +
                 "attribute vec4 vPosition;" +
                 "void main() {" +
                 // the matrix must be included as a modifier of gl_Position
                 // Note that the uMVPMatrix factor *must be first* in order
                 // for the matrix multiplication product to be correct.
-                "  gl_Position = uMVPMatrix * vPosition;" +
-                "}"
+                //"  gl_Position = uMVPMatrix * vPosition;" +
+                "  gl_Position = vPosition;" +
+                "}"*/
 
     // Use to access and set the view transformation
     private var vPMatrixHandle: Int = 0
 
     private val fragmentShaderCode =
-        "precision mediump float;" +
-                "uniform vec4 vColor;" +
-                "void main() {" +
-                "  gl_FragColor = vColor;" +
-                "}"
+        """
+        precision mediump float;
+        uniform vec4 vColor;
+        void main() {
+            //gl_FragColor = vColor;
+            
+            /*if (gl_FragCoord.x < -99999) {
+                discard; // 不渲染此片段
+            } else {
+                gl_FragColor = vec4(0, 1, 1, 1);
+            }*/
+             //gl_FragColor = vec4(gl_FragCoord.x, gl_FragCoord.x, gl_FragCoord.x, 1);
+              gl_FragColor = vec4(0, 1, 1, 1);
+        }
+        """
+    /*"precision mediump float;" +
+            "uniform vec4 vColor;" +
+            "void main() {" +
+            "  gl_FragColor = vColor;" +
+            "}"*/
 
     private var mProgram: Int
 
@@ -389,11 +412,11 @@ class Triangle {
             GLES20.glUniformMatrix4fv(vPMatrixHandle, 1, false, mvpMatrix, 0)
 
             // Draw the triangle
-            //GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount)
+            //GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3)
             // 绘制描边的三角形
-            GLES20.glLineWidth(1f) // 设置描边宽度
+            GLES20.glLineWidth(10f) // 设置描边宽度
             //GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, 3) // 用 GL_LINE_LOOP 绘制描边
-            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, 2)
+            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, 3)
 
             // Disable vertex array
             GLES20.glDisableVertexAttribArray(it)
@@ -459,6 +482,10 @@ class Square {
         -0.5f, -0.5f, 0.0f,      // bottom left
         0.5f, -0.5f, 0.0f,      // bottom right
         0.5f, 0.5f, 0.0f       // top right
+        /*-0.5f, 0.5f, 0.0f,      // top left
+      -0.5f, -0.5f, 0.0f,      // bottom left
+      0f, 0f, 0.0f,      // bottom right
+      0f, 0f, 0.0f       // top right*/
     )
 
     // 四个顶点的缓冲数组
@@ -485,20 +512,61 @@ class Square {
      * 暂时将顶点着色器的源代码硬编码在C风格字符串中
      */
     private val vertexShaderCode =
-        "attribute vec4 vPosition;" +
+        """
+            attribute vec4 vPosition;
+            void main() {
+              //gl_Position = vPosition;
+              gl_PointSize = 10.0;
+              
+              if(vPosition.x < -0.46){
+                gl_Position = vec4(-1, vPosition.y, 0, 1);
+                //gl_Position = vec4(-1, vPosition.y, vPosition.z, vPosition.w);
+                //gl_Position = vPosition;
+              }else{
+                gl_Position = vPosition;
+              }
+              
+              /*if(vPosition.x < 0.3){
+                gl_Position = vec2(0.1, 0.1);
+              }else if(vPosition.x < 0.5){
+                gl_Position = vec2(0.3, 0.3);
+              }else if(vPosition.x < 0.7){
+                gl_Position = vec2(0.5, 0.5);
+              }else{
+                gl_Position = vec2(0.8, 0.8);
+              }*/
+            }
+        """.trimIndent()
+        /*"attribute vec4 vPosition;" +
                 "void main() {" +
                 "  gl_Position = vPosition;" +
-                "}"
+                "}"*/
 
+    /*"precision mediump float;" +
+            "uniform vec4 vColor;" +
+            "void main() {" +
+            "  gl_FragColor = vColor;" +
+            "}"*/
     /**
      * 片段着色器代码
      */
     private val fragmentShaderCode =
-        "precision mediump float;" +
-                "uniform vec4 vColor;" +
-                "void main() {" +
-                "  gl_FragColor = vColor;" +
-                "}"
+        """
+           precision mediump float;
+           uniform vec4 vColor;
+           void main() {
+               //gl_FragColor = vColor;
+               float width = 1080.0; // 假设屏幕宽度为 1080
+               vec2 fragCoord = gl_FragCoord.xy; // 使用屏幕坐标获取片段坐标
+               float normalizedX = fragCoord.x / width; 
+               if( fragCoord.x > width / 2.0){
+                  //discard;
+                  gl_FragColor = vec4(normalizedX, normalizedX, normalizedX, 1);
+               }else{
+                  gl_FragColor = vec4(normalizedX, normalizedX, normalizedX, 1);
+               }
+           }
+        """.trimIndent()
 
     // 设置颜色(分别代表red, green, blue and alpha)
     private val color = floatArrayOf(0.63671875f, 0.76953125f, 0.22265625f, 1.0f)
