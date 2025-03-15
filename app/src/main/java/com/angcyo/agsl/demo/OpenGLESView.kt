@@ -152,7 +152,11 @@ class MyRenderer : GLSurfaceView.Renderer {
 
         // this projection matrix is applied to object coordinates
         // in the onDrawFrame() method
-        Matrix.frustumM(projectionMatrix, 0, -ratio, ratio, -1f, 1f, 3f, 7f)
+        Matrix.frustumM(projectionMatrix, 0, -ratio, ratio, -1f, 1f, 3f, 9f)
+        //Matrix.frustumM(projectionMatrix, 0, -ratio, ratio, -1f, 1f, 1f, 3f)
+        //Matrix.frustumM(projectionMatrix, 0, -10f, 10f, -10f, 10f, 1f, 3f)
+
+        //Matrix.orthoM(projectionMatrix, 0, -ratio, ratio, -1f, 1f, 3f, 7f)
 
         //GLES20.glViewport(0, 0, width, height)
         //val ratio: Float = width.toFloat() / height.toFloat()
@@ -310,20 +314,21 @@ class Triangle {
         attribute vec4 vPosition;
         void main() {
           gl_Position = uMVPMatrix * vPosition;
+          //gl_Position = vPosition;
           gl_PointSize = 10.0;
         }
     """.trimIndent()
     // This matrix member variable provides a hook to manipulate
-        // the coordinates of the objects that use this vertex shader
-        /*"uniform mat4 uMVPMatrix;" +
-                "attribute vec4 vPosition;" +
-                "void main() {" +
-                // the matrix must be included as a modifier of gl_Position
-                // Note that the uMVPMatrix factor *must be first* in order
-                // for the matrix multiplication product to be correct.
-                //"  gl_Position = uMVPMatrix * vPosition;" +
-                "  gl_Position = vPosition;" +
-                "}"*/
+    // the coordinates of the objects that use this vertex shader
+    /*"uniform mat4 uMVPMatrix;" +
+            "attribute vec4 vPosition;" +
+            "void main() {" +
+            // the matrix must be included as a modifier of gl_Position
+            // Note that the uMVPMatrix factor *must be first* in order
+            // for the matrix multiplication product to be correct.
+            //"  gl_Position = uMVPMatrix * vPosition;" +
+            "  gl_Position = vPosition;" +
+            "}"*/
 
     // Use to access and set the view transformation
     private var vPMatrixHandle: Int = 0
@@ -537,10 +542,10 @@ class Square {
               }*/
             }
         """.trimIndent()
-        /*"attribute vec4 vPosition;" +
-                "void main() {" +
-                "  gl_Position = vPosition;" +
-                "}"*/
+    /*"attribute vec4 vPosition;" +
+            "void main() {" +
+            "  gl_Position = vPosition;" +
+            "}"*/
 
     /*"precision mediump float;" +
             "uniform vec4 vColor;" +
@@ -559,10 +564,12 @@ class Square {
                float width = 1080.0; // 假设屏幕宽度为 1080
                vec2 fragCoord = gl_FragCoord.xy; // 使用屏幕坐标获取片段坐标
                float normalizedX = fragCoord.x / width; 
-               if( fragCoord.x > width / 2.0){
-                  //discard;
-                  gl_FragColor = vec4(normalizedX, normalizedX, normalizedX, 1);
-               }else{
+               if( fragCoord.x > width / 2.0 && fragCoord.x < width / 2.0 + 100.0){
+                  discard;
+                  //gl_FragColor = vec4(normalizedX, normalizedX, normalizedX, 1);
+               }else if(fragCoord.x >= width / 2.0 + 100.0){
+                  gl_FragColor = vec4(1.0, 0.0, 0.0, 1);               
+               } else{
                   gl_FragColor = vec4(normalizedX, normalizedX, normalizedX, 1);
                }
            }
